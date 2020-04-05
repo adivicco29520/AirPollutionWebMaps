@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width,initial-scale=1.0" name="viewport" />
+        <title>Air Pollution in India</title>
+        <link rel="stylesheet" href="src/leaflet.css">
+        <link rel="stylesheet" href="src/css/bootstrap.css">
+        <link rel="stylesheet" href="src/plugins/L.Control.Pan.css">
+        <link rel="stylesheet" href="src/plugins/L.Control.Zoomslider.css">
+        <link rel="stylesheet" href="src/plugins/leaflet.fullscreen.css">
+        <link rel="stylesheet" href="src/plugins/L.Control.MousePosition.css">
+        <link rel="stylesheet" href="src/plugins/Leaflet.PolylineMeasure.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="src/plugins/easy-button.css">
+        <!--<link rel="stylesheet" href="src/plugins/leaflet-sidebar.css">-->
+        <link rel="stylesheet" href="src/plugins/Leaflet-MiniMap/src/Control.MiniMap.css">
+        <link rel="stylesheet" href="src/plugins/Control.OSMGeocoder.css">
+        
+        <script src="src/leaflet-src.js"></script>
+        <script src="src/jquery-3.4.1.min.js"></script>
+        <!-- <scrip src="src/leaflet-providers.js"></scrip> -->
+        <script src="src/plugins/L.Control.Pan.js"></script>
+        <script src="src/plugins/L.Control.Zoomslider.js"></script>
+        <script src="src/plugins/Leaflet.fullscreen.min.js"></script>
+        <script src="src/plugins/L.Control.MousePosition.js"></script>
+        <script src="src/plugins/Leaflet.PolylineMeasure.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js" charset="utf-8"></script>
+        <script src="src/plugins/easy-button.js"></script>
+        <!--<script src="src/plugins/leaflet-sidebar.js"></script>-->
+        <script src="src/plugins/Leaflet-MiniMap/src/Control.MiniMap.js"></script>
+        <script src="src/plugins/Control.OSMGeocoder.js"></script>
+        <script src="src/plugins/leaflet-providers.js"></script>
+        
+        <!-- Specify Source of GeoJSON Layer for Delhi NCR Region -->
+        <script src="data/geojson/DelhiNCR.geojson"></script>
+        
+        <style type="text/css">
+            html, body { width: 100%; height: 100%; margin: 0; }
+            #map1, #map2 { width: 49.5%; height: 100%; }
+            #map1 { float: left; }
+            #map2 { float: right; }
+    </style>    </head>
+    <body>
+        <div id="map1"></div>
+        <div id="map2"></div>
+        <script src="src/plugins/Leaflet.Sync/L.Map.Sync.js"></script>
+        <script>
+            var map1;
+            var map2;
+            var baselyr;
+            var img_March2019URL_df1;
+            var img_March2019URL_df2;
+            var img_March2019URL_df3;
+            var img_March2020URL_df1;
+            var img_March2020URL_df2;
+            var img_March2020URL_df3;
+            var DelhiLayer;
+            var lyrOpenTopoMap;
+            var lyrStamenTerrain;
+            var lyrESRIImagery;
+            var currentLocationMarker;
+            var popupKolkata;
+            var AttrControl;
+            var controlScaleBar;
+            var controlPan;
+            var controlZoomSlider;
+            var controlFullScreen;
+            var DisplayMouseCoordinates;
+            var MeasureControl;
+            var ControlLocate;
+            var ControlEasyButton;
+            var controlSideBar;
+            var ControlMiniMap;
+            var minimaplayer; 
+            var osmGeocoder;
+            var LayerControl;
+            var objBasemaps;
+            var objoverlayLayers1;
+            var objoverlayLayers2;
+            var imageBounds;
+            var Control_NO2_March2019_df1;
+            var Control_NO2_March2019_df2;
+            var Control_NO2_March2019_df3;
+            var Control_NO2_March2020_df1;
+            var Control_NO2_March2020_df2;
+            var Control_NO2_March2020_df3;
+            
+            // Create a jQuery Function that runs when the document is loaded
+            // Its a good practice to put all JavaScript code inside this ready function
+            $(document).ready(function(){
+                map1 = L.map('map1', {center:[28.3, 77.3564], zoom:8,zoomControl:true,attributionControl:false})
+                lyrOSM = L.tileLayer.provider('OpenStreetMap.Mapnik')
+                lyrESRIImagery = L.tileLayer.provider('Esri.WorldImagery')
+                lyrOpenTopoMap = L.tileLayer.provider('OpenTopoMap')
+                lyrESRIWorldStreet = L.tileLayer.provider('Esri.WorldStreetMap')
+                lyrStamenTerrain = L.tileLayer.provider('Stamen.Terrain')
+                baselyr = L.tileLayer.provider('Stamen.Terrain',{minZoom:0,maxZoom:18}).addTo(map1);
+                map1.addLayer(baselyr); 
+                
+                map2 = L.map('map2', {center:[28.3, 77.3564], zoom:8,zoomControl:true,attributionControl:false})
+                baselyr = L.tileLayer.provider('Stamen.Terrain',{minZoom:0,maxZoom:18}).addTo(map2);
+                
+                
+                //Adding GeoJSON Layer for Delhi NCR Region on the Map 
+                DelhiLayer = L.geoJson(delhincr); 
+                
+                // Source of Images showing Mean NO2 Levels over India 
+                img_March2019URL_df1 = 'data/images/Mean_NO2_India_March2019_1_10.jpg'
+                img_March2019URL_df2 = 'data/images/Mean_NO2_India_March2019_11_20.jpg'
+                img_March2019URL_df3 = 'data/images/Mean_NO2_India_March2019_21_31.jpg'
+                img_March2020URL_df1 = 'data/images/Mean_NO2_India_March2020_1_10.jpg'
+                img_March2020URL_df2 = 'data/images/Mean_NO2_India_March2020_11_20.jpg'
+                img_March2020URL_df3 = 'data/images/Mean_NO2_India_March2020_21_31.jpg'
+                
+                // Setting Bounds of the Image to be Displayed
+                imageBounds = [[38,98],[6,68]];
+                
+                // Setting Control of Image Overlay for our Map
+                Control_NO2_March2019_df1 = L.imageOverlay(img_March2019URL_df1,imageBounds,{
+                    opacity:0.85,
+                    interactive:true
+                });
+                Control_NO2_March2019_df2 = L.imageOverlay(img_March2019URL_df2,imageBounds,{
+                    opacity:0.85,
+                    interactive:true
+                });
+                Control_NO2_March2019_df3 = L.imageOverlay(img_March2019URL_df3,imageBounds,{
+                    opacity:0.85,
+                    interactive:true
+                });
+                Control_NO2_March2020_df1 = L.imageOverlay(img_March2020URL_df1,imageBounds,{
+                    opacity:0.85,
+                    interactive:true
+                });
+                Control_NO2_March2020_df2 = L.imageOverlay(img_March2020URL_df2,imageBounds,{
+                    opacity:0.85,
+                    interactive:true
+                });
+                
+                Control_NO2_March2020_df3 = L.imageOverlay(img_March2020URL_df3,imageBounds,{
+                    opacity:0.85,
+                    interactive:true
+                });
+                
+                objBasemaps = {
+                    'Open Street Maps' : lyrOSM,
+                    'Open Topo Map': lyrOpenTopoMap,
+                    'Stamen Terrain': lyrStamenTerrain,
+                    'ESRI World Street Map': lyrESRIWorldStreet,
+                    'ESRI Imagery': lyrESRIImagery
+                };
+                
+                objoverlayLayers1 = {
+                    'Delhi NCR': DelhiLayer,
+                    'March 1 - 10, 2019':Control_NO2_March2019_df1,
+                    'March 11 - 20, 2019':Control_NO2_March2019_df2,
+                    'March 21 - 31, 2019':Control_NO2_March2019_df3
+                };
+                
+                objoverlayLayers2 = {
+                    'Delhi NCR': DelhiLayer,
+                    'March 1 - 10, 2020':Control_NO2_March2020_df1,
+                    'March 11 - 20, 2020':Control_NO2_March2020_df2,
+                    'March 21 - 31, 2020':Control_NO2_March2020_df3
+                };
+                
+                LayerControl = L.control.layers(objBasemaps, objoverlayLayers1).addTo(map1);
+                LayerControl = L.control.layers(objBasemaps, objoverlayLayers2).addTo(map2);
+                
+                osmGeocoder = new L.Control.OSMGeocoder().addTo(map1);
+                osmGeocoder = new L.Control.OSMGeocoder().addTo(map2);
+                minimaplayer = new L.tileLayer.provider('Stadia.AlidadeSmooth', {minZoom: 0, maxZoom: 18});
+                
+                //controlPan = L.control.pan().addTo(map1);
+                
+                //controlZoomSlider = L.control.zoomslider().addTo(map1);
+                
+                AttrControl = L.control.attribution({position:'bottomleft'}).addTo(map1);
+                AttrControl.addAttribution('<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>');
+                AttrControl.addAttribution('&copy; <a href = "https://adivicco.wordpress.com">Aditya Sharma</a>')
+                
+                controlScaleBar = L.control.scale({position:'bottomleft', maxWidth:100, imperial:false}).addTo(map1);
+                
+                controlFullScreen = L.control.fullscreen({position:'topleft'}).addTo(map1);
+                controlFullScreen = L.control.fullscreen({position:'topleft'}).addTo(map2);
+                
+                
+                MeasureControl = L.control.polylineMeasure({position:'topleft',
+                                                           unit:'meters',
+                                                           showBearings:false,
+                                                           clearMeasurementOnStop:false,
+                                                           showClearControl:true,
+                                                           showUnitControl:true,
+                                                           }).addTo(map1);
+                
+                DisplayMouseCoordinates = L.control.mousePosition({position:'bottomleft',
+                                                                   separator:',',
+                                                                   numDigits:3
+                                                                  }).addTo(map1);
+                
+                //ControlEasyButton = L.easyButton('glyphicon-transfer', function() {
+                //    osmGeocoder.toggleDisplay();
+                //}).addTo(map1);
+                
+                //controlSideBar = L.control.sidebar('sidebar',{position:'right'});
+                
+                ControlMiniMap = new L.Control.MiniMap(minimaplayer, { toggleDisplay: true, 
+                                                             minimized:true,
+                                                             width:300,
+                                                             height:300,
+                                                             collapsedWidth:22,
+                                                             collapsedHeight:22,
+                                                             zoomLevelOffset:-4}).addTo(map2);
+                
+                ControlLocate = L.control.locate({position:'topleft',
+                                                 flyTo:true}).addTo(map1);
+                
+                map1.sync(map2);
+                map2.sync(map1);
+                
+              // Create an Event handler
+              // Create another event handler that allows us to create markers when we right click anywhere on the map
+              map1.on('contextmenu', function(evOb) {
+                  var dtCurrentTime = new Date();
+                  L.marker(evOb.latlng).addTo(map1).bindPopup(evOb.latlng.toString()+"<br>"+dtCurrentTime.toString());
+              })
+                // Create a Circle Marker around the users' current location
+              map1.on('locationfound', function(evOb) {
+                  console.log(evOb);
+                  if (currentLocationMarker) {
+                      currentLocationMarker.remove();
+                  }
+                  currentLocationMarker = L.circle(evOb.latlng, {
+                      radius:evOb.accuracy/2
+                  }).addTo(map1);
+                  map1.setView(evOb.latlng,14);
+              })
+                // Display an error message if location not found
+              map1.on('locationerror', function(evOb) {
+                  console.log(evOb);
+                  alert('Location Not Found!');
+              })
+                //Display Current Zoom Level on the side panel
+              map1.on('zoomend',function() {
+                  $("#zoom-level").html(map1.getZoom());
+              })
+              // Display the Map Center 
+              map1.on('moveend', function() {
+                  $("#map-center").html(LatLngToArrayString(map1.getCenter()));
+              });
+
+            });
+            
+            function LatLngToArrayString(ll) {
+                return "["+ll.lat.toFixed(3)+","+ll.lng.toFixed(3)+"]";
+            }
+        </script>
+    </body>
+</html>
